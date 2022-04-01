@@ -41,6 +41,7 @@ exports.addNewItemStock = addNewItemStock;
 const retirarStock = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const [retiro, item] = req.body;
     const dayJS = (0, dayjs_1.default)();
+    console.log('El usuario retirara stock');
     try {
         const itemFinded = yield ItemStock_model_1.ItemStockModel.findById(item._id);
         yield ItemStock_model_1.ItemStockModel.findByIdAndUpdate(item._id, item);
