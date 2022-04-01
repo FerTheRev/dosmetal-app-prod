@@ -39,9 +39,9 @@ const getTodayRetiros = (req, res) => __awaiter(void 0, void 0, void 0, function
         });
         newMonth.days.push(newDay._id);
         yield newMonth.save();
-        yield newDay.save();
+        const todaySaved = yield newDay.save();
         console.log('Retiros del dia entregado');
-        return res.json(newMonth.populate('dayEvents'));
+        return res.json(todaySaved.populate('dayEvents'));
     }
     const today = yield Stock_day_retiros_model_1.StockDayRetiroModel.findOne({
         MonthID: month._id,
