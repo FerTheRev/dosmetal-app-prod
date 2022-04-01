@@ -20,6 +20,7 @@ const Stock_Month_Retiros_model_1 = require("../models/Stock-Month-Retiros.model
 const dayJS = (0, dayjs_1.default)();
 const getTodayRetiros = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('El usuario requirio los retiros del dia');
+    console.log(dayJS.format('M-YYYY'));
     const month = yield Stock_Month_Retiros_model_1.StockMonthRetirosModel.findOne({
         month: dayJS.format('M-YYYY')
     });
