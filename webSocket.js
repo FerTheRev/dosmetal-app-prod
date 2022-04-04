@@ -31,20 +31,36 @@ function WebSocketService(io) {
             io.emit('[STOCK] item deleted', itemDeleted);
         }));
         //* RETIROS
-        const retiros = yield (0, retiros_service_1.getTodayRetiros)();
-        const MonthsAndDayEvents = yield (0, retiros_service_1.getMonthWithDayEventsRetiros)();
-        socket.on('[RETIROS] reload day events', () => {
-            console.log('Hay que recargar la lista de retiros');
-            setTimeout(() => __awaiter(this, void 0, void 0, function* () {
-                const r = yield (0, retiros_service_1.getTodayRetiros)();
-                io.emit('[RETIROS] get Today', r);
-            }), 1000);
-        });
-        io.emit('[RETIROS] get Today', retiros);
-        io.emit('[RETIROS] get month and day events', MonthsAndDayEvents);
+        emitTodayEvents();
+        emitMonthAndDaysEvents();
+        // const retiros = await getTodayRetiros();
+        // const MonthsAndDayEvents = await getMonthWithDayEventsRetiros();
+        // socket.on('[RETIROS] reload day events', () => {
+        // 	console.log('Hay que recargar la lista de retiros');
+        // 	setTimeout(async () => {
+        // 		const r = await getTodayRetiros();
+        // 		io.emit('[RETIROS] get Today', r);
+        // 	}, 1000);
+        // });
+        // io.emit('[RETIROS] get Today', retiros);
+        // io.emit('[RETIROS] get month and day events', MonthsAndDayEvents);
         socket.on('disconnect', () => {
             console.log(`User disconnected, id => ${socket.id}`);
         });
     }));
+    //***/*/*/*/*******///*/*/********/*/*/*/ */ */ */
+    function emitTodayEvents() {
+        return __awaiter(this, void 0, void 0, function* () {
+            console.log('Emitiendo al usuario el dia de hoy');
+            const retiros = yield (0, retiros_service_1.getTodayRetiros)();
+            io.emit('[RETIROS] get Today', retiros);
+        });
+    }
+    function emitMonthAndDaysEvents() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const MonthsAndDayEvents = yield (0, retiros_service_1.getMonthWithDayEventsRetiros)();
+            io.emit('[RETIROS] get month and day events', MonthsAndDayEvents);
+        });
+    }
 }
 exports.WebSocketService = WebSocketService;
