@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebSocketService = void 0;
 const ItemStock_model_1 = require("./models/ItemStock.model");
+const retiros_service_1 = require("./services/retiros.service");
 const stock_service_1 = require("./services/stock.service");
 function WebSocketService(io) {
     io.on('connection', (socket) => __awaiter(this, void 0, void 0, function* () {
@@ -29,6 +30,18 @@ function WebSocketService(io) {
             const itemDeleted = yield (0, stock_service_1.deleteWSItemStock)(itemID);
             io.emit('[STOCK] item deleted', itemDeleted);
         }));
+        //* RETIROS
+        const retiros = yield (0, retiros_service_1.getTodayRetiros)();
+        const MonthsAndDayEvents = yield (0, retiros_service_1.getMonthWithDayEventsRetiros)();
+        socket.on('[RETIROS] reload day events', () => {
+            console.log('Hay que recargar la lista de retiros');
+            setTimeout(() => __awaiter(this, void 0, void 0, function* () {
+                const r = yield (0, retiros_service_1.getTodayRetiros)();
+                io.emit('[RETIROS] get Today', r);
+            }), 1000);
+        });
+        io.emit('[RETIROS] get Today', retiros);
+        io.emit('[RETIROS] get month and day events', MonthsAndDayEvents);
         socket.on('disconnect', () => {
             console.log(`User disconnected, id => ${socket.id}`);
         });

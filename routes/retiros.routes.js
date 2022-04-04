@@ -27,6 +27,4 @@ exports.RetirosRoutes = void 0;
 const express_1 = require("express");
 const RetirosController = __importStar(require("../controllers/retiros.controllers"));
 exports.RetirosRoutes = (0, express_1.Router)();
-exports.RetirosRoutes.get('/today', RetirosController.getTodayRetiros);
 exports.RetirosRoutes.post('/especificDay', RetirosController.getEspecificDayRetiros);
-exports.RetirosRoutes.get('', RetirosController.getMonthWithDaysRetiros);
