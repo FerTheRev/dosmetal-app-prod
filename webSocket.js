@@ -30,6 +30,11 @@ function WebSocketService(io) {
             const itemDeleted = yield (0, stock_service_1.deleteWSItemStock)(itemID);
             io.emit('[STOCK] item deleted', itemDeleted);
         }));
+        socket.on('[RETIROS] reload day events', () => {
+            setTimeout(() => __awaiter(this, void 0, void 0, function* () {
+                yield emitTodayEvents();
+            }), 1000);
+        });
         //* RETIROS
         emitTodayEvents();
         emitMonthAndDaysEvents();
