@@ -17,7 +17,7 @@ const Stock_day_retiros_model_1 = require("../models/Stock-day-retiros.model");
 const Stock_Month_Retiros_model_1 = require("../models/Stock-Month-Retiros.model");
 const dayjs_1 = __importDefault(require("dayjs"));
 require("dayjs/locale/es");
-const dayJS = (0, dayjs_1.default)(1652270596000).locale('es');
+const dayJS = (0, dayjs_1.default)().locale('es');
 const getTodayRetiros = () => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`[RETIROS] Se requirio los retiros del dia de hoy ${dayJS.format('M-YYYY')}`);
     const month = yield Stock_Month_Retiros_model_1.StockMonthRetirosModel.findOne({
