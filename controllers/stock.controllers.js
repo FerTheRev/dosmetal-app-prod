@@ -43,64 +43,78 @@ const retirarStock = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const dayJS = (0, dayjs_1.default)();
     console.log('El usuario retirara stock');
     try {
-        const itemFinded = yield ItemStock_model_1.ItemStockModel.findById(item._id);
         yield ItemStock_model_1.ItemStockModel.findByIdAndUpdate(item._id, item);
     }
-    catch (error) { }
-    console.log(dayJS.format('M'));
-    const ExistMonth = yield Stock_Month_Retiros_model_1.StockMonthRetirosModel.findOne({
+    catch (error) {
+        console.log('Error al actualizar item');
+        return;
+    }
+    console.log(`Registrando retiro de stock del dia ${dayJS.format('DD-MM-YYYY')}`);
+    const month = yield Stock_Month_Retiros_model_1.StockMonthRetirosModel.findOne({
         month: dayJS.format('M-YYYY')
     });
-    if (!ExistMonth) {
-        try {
-            console.log('No existe el mes, creando mes....');
-            const newMonth = new Stock_Month_Retiros_model_1.StockMonthRetirosModel({
-                month: dayJS.format('M-YYYY')
-            });
-            const newDay = new Stock_day_retiros_model_1.StockDayRetiroModel({
-                MonthID: newMonth._id,
-                day: dayJS.date()
-            });
-            const newDayEvent = new Stock_Day_Event_model_1.DayEventModel(Object.assign(Object.assign({}, retiro), { DayID: newDay._id }));
-            newDay.dayEvents.push(newDayEvent._id);
-            newMonth.days.push(newDay._id);
-            yield newMonth.save();
-            yield newDay.save();
-            yield newDayEvent.save();
-            return res.json({ success: true });
-        }
-        catch (error) {
-            return res.status(500).json({ success: false });
-        }
-    }
-    console.log('Existe el mes, verificando que existe el dia');
-    const ExisteDay = yield Stock_day_retiros_model_1.StockDayRetiroModel.findOne({
-        MonthID: ExistMonth._id,
-        day: dayJS.date()
-    });
-    if (ExisteDay) {
-        try {
-            console.log('Existe el dia, agregando evento al array...');
-            const newDayEvent = new Stock_Day_Event_model_1.DayEventModel(Object.assign({ DayID: ExisteDay._id }, retiro));
-            ExisteDay.dayEvents.push(newDayEvent._id);
-            yield newDayEvent.save();
-            yield ExisteDay.save();
-            return res.json({ success: true });
-        }
-        catch (error) {
-            return res.status(500).json({ success: false });
-        }
-    }
-    console.log('Existe el mes, pero no el dia');
-    try {
-        const newDay = new Stock_day_retiros_model_1.StockDayRetiroModel({
-            MonthID: ExistMonth._id,
+    if (month) {
+        console.log(`[STOCK][RETIROS] El mes existe, verificando día ${dayJS.date()}`);
+        const day = yield Stock_day_retiros_model_1.StockDayRetiroModel.findOne({
+            MonthID: month._id,
             day: dayJS.date()
         });
-        const newDayEvent = new Stock_Day_Event_model_1.DayEventModel(Object.assign({ DayID: newDay._id }, retiro));
-        newDay.dayEvents.push(newDayEvent._id);
+        if (day) {
+            try {
+                console.log(`[STOCK][RETIROS] El dia existe, registrando retiro`);
+                const Event = new Stock_Day_Event_model_1.DayEventModel(Object.assign(Object.assign({}, retiro), { DayID: day._id }));
+                day.dayEvents.push(Event._id);
+                yield day.save();
+                yield Event.save();
+                console.log(`[STOCK][RETIROS] Retiro registrado con exito`);
+                return res.json({ success: true });
+            }
+            catch (error) {
+                return res.status(500).json({ success: false });
+            }
+        }
+        try {
+            console.log(`[STOCK][RETIROS]El dia ${dayJS.format('DD-MM')} no existe, creando dia`);
+            const newDay = new Stock_day_retiros_model_1.StockDayRetiroModel({
+                MonthID: month._id,
+                day: dayJS.date(),
+                dayEvents: [],
+                timestamp: dayJS.valueOf()
+            });
+            month.days.push(newDay._id);
+            const Event = new Stock_Day_Event_model_1.DayEventModel(Object.assign(Object.assign({}, retiro), { DayID: newDay._id }));
+            newDay.dayEvents.push(Event._id);
+            yield Event.save();
+            yield newDay.save();
+            yield month.save();
+            console.log(`[STOCK][RETIROS] Retiro registrado con exito`);
+            return res.json({ success: true });
+        }
+        catch (error) {
+            return res.status(500).json({ success: false });
+        }
+    }
+    console.log(`[STOCK][RETIROS] El mes ${dayJS.format('MM-YYYY')} no existe, creando mes`);
+    const newMonth = new Stock_Month_Retiros_model_1.StockMonthRetirosModel({
+        month: dayJS.format('MM-YYYY'),
+        days: [],
+        timeStamp: dayJS.valueOf()
+    });
+    console.log(`[STOCK][RETIROS] Creando dia ${dayJS.format('DD-MM')}`);
+    const newDay = new Stock_day_retiros_model_1.StockDayRetiroModel({
+        MonthID: newMonth._id,
+        day: dayJS.date(),
+        dayEvents: [],
+        timestamp: dayJS.valueOf()
+    });
+    newMonth.days.push(newMonth._id);
+    console.log(`[STOCK][RETIROS] Creando Evento`);
+    const Event = new Stock_Day_Event_model_1.DayEventModel(Object.assign({ DayID: newDay._id }, retiro));
+    newDay.dayEvents.push(Event._id);
+    try {
+        yield Event.save();
         yield newDay.save();
-        yield newDayEvent.save();
+        yield newMonth.save();
         return res.json({ success: true });
     }
     catch (error) {
