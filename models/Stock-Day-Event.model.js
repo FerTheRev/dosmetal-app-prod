@@ -13,7 +13,10 @@ const DayEventSchema = new mongoose_2.Schema({
     obra: String,
     producto: String,
     ubicacion: String,
-    unidadesRetiradas: Number
+    unidadesRetiradas: {
+        cajas: Number,
+        unidades_sueltas: Number
+    }
 }, {
     timestamps: true,
     versionKey: false

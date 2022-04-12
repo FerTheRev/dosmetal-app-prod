@@ -39,7 +39,9 @@ const getTodayRetiros = () => __awaiter(void 0, void 0, void 0, function* () {
             dayEvents: [],
             timestamp: dayJS.valueOf()
         });
+        month.days.push(newDay._id);
         yield newDay.save();
+        yield month.save();
         return yield newDay.populate('DayEvents');
     }
     console.log('[RETIROS] Mes inexistente');

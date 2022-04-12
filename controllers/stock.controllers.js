@@ -39,15 +39,21 @@ const addNewItemStock = (req, res) => __awaiter(void 0, void 0, void 0, function
 exports.addNewItemStock = addNewItemStock;
 //* Retirar stock de un item
 const retirarStock = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const [retiro, item] = req.body;
+    const retiro = req.body;
     const dayJS = (0, dayjs_1.default)();
-    console.log('El usuario retirara stock');
-    try {
-        yield ItemStock_model_1.ItemStockModel.findByIdAndUpdate(item._id, item);
+    console.log('[STOCK] Se requiere retirar stock');
+    const item = yield ItemStock_model_1.ItemStockModel.findById(retiro.id);
+    if (item) {
+        item.cajas -= retiro.unidadesRetiradas.cajas;
+        item.unidades_sueltas -= retiro.unidadesRetiradas.unidades_sueltas;
+        item.total = item.unidades_por_caja * item.cajas + item.unidades_sueltas;
+        if (item.total < item.stockMinimo)
+            item.necesitaRecargarStock = true;
     }
-    catch (error) {
-        console.log('Error al actualizar item');
-        return;
+    else {
+        return res
+            .status(500)
+            .json({ reason: 'Error al descontar stock, item inexistente' });
     }
     console.log(`Registrando retiro de stock del dia ${dayJS.format('DD-MM-YYYY')}`);
     const month = yield Stock_Month_Retiros_model_1.StockMonthRetirosModel.findOne({
@@ -67,10 +73,10 @@ const retirarStock = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 yield day.save();
                 yield Event.save();
                 console.log(`[STOCK][RETIROS] Retiro registrado con exito`);
-                return res.json({ success: true });
+                return res.json({ success: 'Retiro exitoso' });
             }
             catch (error) {
-                return res.status(500).json({ success: false });
+                return res.status(500).json({ reason: 'Error al retirar stock' });
             }
         }
         try {
@@ -88,10 +94,10 @@ const retirarStock = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             yield newDay.save();
             yield month.save();
             console.log(`[STOCK][RETIROS] Retiro registrado con exito`);
-            return res.json({ success: true });
+            return res.json({ success: `[STOCK][RETIROS] Retiro registrado con exito` });
         }
         catch (error) {
-            return res.status(500).json({ success: false });
+            return res.status(500).json({ reason: 'Error al retirar stock' });
         }
     }
     console.log(`[STOCK][RETIROS] El mes ${dayJS.format('MM-YYYY')} no existe, creando mes`);
@@ -115,23 +121,25 @@ const retirarStock = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         yield Event.save();
         yield newDay.save();
         yield newMonth.save();
-        return res.json({ success: true });
+        return res.json({ success: `[STOCK][RETIROS] Retiro registrado con exito` });
     }
     catch (error) {
-        return res.status(500).json({ success: false });
+        return res.status(500).json({ reason: 'Error al retirar stock' });
     }
 });
 exports.retirarStock = retirarStock;
 //* Cargar stock a un item
 const addStockToItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const item = req.body;
-    console.log(item.total);
-    const itemFounded = yield ItemStock_model_1.ItemStockModel.findByIdAndUpdate(item._id, item);
-    if (itemFounded) {
-        yield itemFounded.save();
-        return res.json({ success: true });
+    const itemChanges = req.body;
+    const item = yield ItemStock_model_1.ItemStockModel.findOne({ _id: itemChanges.id });
+    if (item) {
+        item.cajas += itemChanges.total_cajas;
+        item.unidades_sueltas += itemChanges.unidades_sueltas;
+        item.total = item.unidades_por_caja * item.cajas + item.unidades_sueltas;
+        yield item.save();
+        return res.json({ success: 'ITEM actualizado correctamente' });
     }
-    return res.status(500).json({ success: false });
+    return res.status(500).json({ reason: 'ITEM no encontrado' });
 });
 exports.addStockToItem = addStockToItem;
 //* Editar metadatos de un item en el stock
