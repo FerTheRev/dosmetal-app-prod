@@ -33,6 +33,7 @@ const getTodayRetiros = () => __awaiter(void 0, void 0, void 0, function* () {
             console.log(`[RETIROS] El dia ${dayJS.format('DD-MM')} existe`);
             return yield day.populate('dayEvents');
         }
+        console.log(`[RETIROS] No existe el dia, creando el dia de hoy ${dayJS.format('DD-MM')}`);
         const newDay = new Stock_day_retiros_model_1.StockDayRetiroModel({
             MonthID: month._id,
             day: dayJS.date(),
@@ -42,7 +43,8 @@ const getTodayRetiros = () => __awaiter(void 0, void 0, void 0, function* () {
         month.days.push(newDay._id);
         yield newDay.save();
         yield month.save();
-        return yield newDay.populate('DayEvents');
+        console.log(`[RETIROS] Dia ${dayJS.format('DD-MM')} creado con exito`);
+        return newDay;
     }
     console.log('[RETIROS] Mes inexistente');
     console.log('[RETIROS] Creando mes');
@@ -60,7 +62,7 @@ const getTodayRetiros = () => __awaiter(void 0, void 0, void 0, function* () {
     newMonth.days.push(newDay._id);
     yield newDay.save();
     yield newMonth.save();
-    return newDay.populate('dayEvents');
+    return newDay;
 });
 exports.getTodayRetiros = getTodayRetiros;
 const getMonthWithDayEventsRetiros = () => __awaiter(void 0, void 0, void 0, function* () {
