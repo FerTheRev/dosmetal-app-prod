@@ -28,6 +28,7 @@ const express_1 = require("express");
 const StockController = __importStar(require("../controllers/stock.controllers"));
 exports.StockRoutes = (0, express_1.Router)();
 exports.StockRoutes.get('/', StockController.getAllStock);
+exports.StockRoutes.get('/history/:id', StockController.getHistoryItem);
 exports.StockRoutes.post('/', StockController.addNewItemStock);
 exports.StockRoutes.post('/retirar', StockController.retirarStock);
 exports.StockRoutes.post('/sumar', StockController.addStockToItem);

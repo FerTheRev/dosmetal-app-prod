@@ -12,12 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.editItemStock = exports.addStockToItem = exports.retirarStock = exports.addNewItemStock = exports.getAllStock = void 0;
+exports.getHistoryItem = exports.editItemStock = exports.addStockToItem = exports.retirarStock = exports.addNewItemStock = exports.getAllStock = void 0;
 const dayjs_1 = __importDefault(require("dayjs"));
 const ItemStock_model_1 = require("../models/ItemStock.model");
 const Stock_Month_Retiros_model_1 = require("../models/Stock-Month-Retiros.model");
 const Stock_day_retiros_model_1 = require("../models/Stock-day-retiros.model");
 const Stock_Day_Event_model_1 = require("../models/Stock-Day-Event.model");
+const dayJS = (0, dayjs_1.default)();
 //* Recuperar todo el stock disponible
 const getAllStock = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const items = yield ItemStock_model_1.ItemStockModel.find();
@@ -40,15 +41,20 @@ exports.addNewItemStock = addNewItemStock;
 //* Retirar stock de un item
 const retirarStock = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const retiro = req.body;
-    const dayJS = (0, dayjs_1.default)();
     console.log('[STOCK] Se requiere retirar stock');
     const item = yield ItemStock_model_1.ItemStockModel.findById(retiro.id);
     if (item) {
         item.cajas -= retiro.unidadesRetiradas.cajas;
         item.unidades_sueltas -= retiro.unidadesRetiradas.unidades_sueltas;
         item.total = item.unidades_por_caja * item.cajas + item.unidades_sueltas;
-        if (item.total < item.stockMinimo)
+        item.historial.push({
+            date: dayJS.valueOf(),
+            detail: `Se han retirado ${retiro.unidadesRetiradas.cajas} cajas
+			 y/o ${retiro.unidadesRetiradas.unidades_sueltas} unidades sueltas, RESTAN: ${item.total} sumando todo.`
+        });
+        if (item.total <= item.stockMinimo)
             item.necesitaRecargarStock = true;
+        yield item.save();
     }
     else {
         return res
@@ -136,6 +142,14 @@ const addStockToItem = (req, res) => __awaiter(void 0, void 0, void 0, function*
         item.cajas += itemChanges.total_cajas;
         item.unidades_sueltas += itemChanges.unidades_sueltas;
         item.total = item.unidades_por_caja * item.cajas + item.unidades_sueltas;
+        item.historial.push({
+            date: dayJS.valueOf(),
+            detail: `Se ha agregado un total de ${itemChanges.total_cajas} cajas y/o
+			 ${itemChanges.unidades_sueltas} unidades sueltas a este item, ahora hay un total de ${item.total} sumando todo.`
+        });
+        if (item.total >= item.stockMinimo)
+            item.necesitaRecargarStock = false;
+        console.log(item);
         yield item.save();
         return res.json({ success: 'ITEM actualizado correctamente' });
     }
@@ -158,3 +172,13 @@ const editItemStock = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.editItemStock = editItemStock;
+//* Obtener el historial de un item
+const getHistoryItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const item = yield ItemStock_model_1.ItemStockModel.findById(req.params.id);
+    if (item) {
+        const { historial } = item;
+        return res.json({ historial });
+    }
+    return res.status(500).json({ reason: 'Item Inexistente' });
+});
+exports.getHistoryItem = getHistoryItem;

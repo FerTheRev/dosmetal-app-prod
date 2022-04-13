@@ -1,12 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ItemStockModel = void 0;
-const mongoose_1 = __importDefault(require("mongoose"));
-const mongoose_2 = require("mongoose");
-const ItemStockSchema = new mongoose_2.Schema({
+const mongoose_1 = require("mongoose");
+const itemStock_history_model_1 = require("./itemStock-history.model");
+const ItemStockSchema = new mongoose_1.Schema({
     referencia: String,
     categoria: String,
     detalle: String,
@@ -17,9 +14,10 @@ const ItemStockSchema = new mongoose_2.Schema({
     necesitaRecargarStock: Boolean,
     stockMinimo: Number,
     ubicacion: String,
-    image: String
+    image: String,
+    historial: [itemStock_history_model_1.itemStockHistorySchema]
 }, {
     versionKey: false,
     timestamps: true
 });
-exports.ItemStockModel = mongoose_1.default.model('Stock-item', ItemStockSchema);
+exports.ItemStockModel = (0, mongoose_1.model)('Stock-item', ItemStockSchema);

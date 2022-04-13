@@ -19,12 +19,12 @@ const dayjs_1 = __importDefault(require("dayjs"));
 require("dayjs/locale/es");
 const dayJS = (0, dayjs_1.default)().locale('es');
 const getTodayRetiros = () => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(`[RETIROS] Se requirio los retiros del dia de hoy ${dayJS.format('M-YYYY')}`);
+    console.log(`[RETIROS] Se requirio los retiros del dia de hoy ${dayJS.format('DD-MM-YYYY')}`);
     const month = yield Stock_Month_Retiros_model_1.StockMonthRetirosModel.findOne({
         month: dayJS.format('M-YYYY')
     });
     if (month) {
-        console.log('[RETIROS] El mes existe, verificando dia');
+        console.log(`[RETIROS] El mes existe, verificando que exista el dia de hoy : ${dayJS.date()}`);
         const day = yield Stock_day_retiros_model_1.StockDayRetiroModel.findOne({
             MonthID: month._id,
             day: dayJS.date()
