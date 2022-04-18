@@ -18,7 +18,6 @@ const ItemStock_model_1 = require("../models/ItemStock.model");
 const Stock_Month_Retiros_model_1 = require("../models/Stock-Month-Retiros.model");
 const Stock_day_retiros_model_1 = require("../models/Stock-day-retiros.model");
 const Stock_Day_Event_model_1 = require("../models/Stock-Day-Event.model");
-const dayJS = (0, dayjs_1.default)();
 //* Recuperar todo el stock disponible
 const getAllStock = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const items = yield ItemStock_model_1.ItemStockModel.find();
@@ -40,6 +39,7 @@ const addNewItemStock = (req, res) => __awaiter(void 0, void 0, void 0, function
 exports.addNewItemStock = addNewItemStock;
 //* Retirar stock de un item
 const retirarStock = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const dayJS = (0, dayjs_1.default)();
     const retiro = req.body;
     console.log('[STOCK] Se requiere retirar stock');
     const item = yield ItemStock_model_1.ItemStockModel.findById(retiro.id);
@@ -136,6 +136,7 @@ const retirarStock = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.retirarStock = retirarStock;
 //* Cargar stock a un item
 const addStockToItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const dayJS = (0, dayjs_1.default)();
     const itemChanges = req.body;
     const item = yield ItemStock_model_1.ItemStockModel.findOne({ _id: itemChanges.id });
     if (item) {
