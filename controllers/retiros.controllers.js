@@ -8,14 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getEspecificDayRetiros = void 0;
-const dayjs_1 = __importDefault(require("dayjs"));
 const Stock_Day_Event_model_1 = require("../models/Stock-Day-Event.model");
-const dayJS = (0, dayjs_1.default)();
 const getEspecificDayRetiros = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('El usuario requirio un dia especifico de retiros');
     const dayEvents = yield Stock_Day_Event_model_1.DayEventModel.find({

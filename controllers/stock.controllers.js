@@ -38,22 +38,55 @@ const addNewItemStock = (req, res) => __awaiter(void 0, void 0, void 0, function
 });
 exports.addNewItemStock = addNewItemStock;
 //* Retirar stock de un item
+/**
+ * It takes a request, and then it checks if the item exists, if it does, it subtracts the amount of
+ * units that were taken out of stock, and then it checks if the item needs to be re-stocked, if it
+ * does, it sets the flag to true, and then it saves the item
+ * @param {Request} req - Request
+ * @param {Response} res - Response
+ * @returns a promise.
+ */
 const retirarStock = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const dayJS = (0, dayjs_1.default)();
     const retiro = req.body;
     console.log('[STOCK] Se requiere retirar stock');
+    console.log(retiro);
     const item = yield ItemStock_model_1.ItemStockModel.findById(retiro.id);
     if (item) {
         item.cajas -= retiro.unidadesRetiradas.cajas;
-        item.unidades_sueltas -= retiro.unidadesRetiradas.unidades_sueltas;
+        if (retiro.unidadesRetiradas.unidades_sueltas > item.unidades_sueltas) {
+            item.cajas -= 1;
+            item.unidades_sueltas += item.unidades_por_caja;
+            item.unidades_sueltas -= retiro.unidadesRetiradas.unidades_sueltas;
+            item.necesitaRecargarStock = item.stockMinimo > item.total;
+        }
+        else {
+            item.unidades_sueltas -= retiro.unidadesRetiradas.unidades_sueltas;
+            item.necesitaRecargarStock = item.total < item.stockMinimo;
+        }
+        ;
         item.total = item.unidades_por_caja * item.cajas + item.unidades_sueltas;
+        item.necesitaRecargarStock = item.total < item.stockMinimo;
+        const DetailMessage = () => {
+            switch (true) {
+                case retiro.unidadesRetiradas.cajas > 0 &&
+                    retiro.unidadesRetiradas.unidades_sueltas > 0:
+                    return `Se han retirado ${retiro.unidadesRetiradas.cajas} cajas
+				y ${retiro.unidadesRetiradas.unidades_sueltas} unidades sueltas, RESTAN: ${item.total} sumando todo.`;
+                case retiro.unidadesRetiradas.cajas <= 0 &&
+                    retiro.unidadesRetiradas.unidades_sueltas > 0:
+                    return `Se han retirado ${retiro.unidadesRetiradas.unidades_sueltas} unidades sueltas, RESTAN: ${item.total} sumando todo.`;
+                case retiro.unidadesRetiradas.cajas > 0 && retiro.unidadesRetiradas.unidades_sueltas <= 0:
+                    return `Se han retirado ${retiro.unidadesRetiradas.cajas} cajas, RESTAN ${item.total} sumando todo`;
+                default:
+                    true;
+                    return '';
+            }
+        };
         item.historial.push({
             date: dayJS.valueOf(),
-            detail: `Se han retirado ${retiro.unidadesRetiradas.cajas} cajas
-			 y/o ${retiro.unidadesRetiradas.unidades_sueltas} unidades sueltas, RESTAN: ${item.total} sumando todo.`
+            detail: DetailMessage()
         });
-        if (item.total <= item.stockMinimo)
-            item.necesitaRecargarStock = true;
         yield item.save();
     }
     else {
@@ -135,6 +168,13 @@ const retirarStock = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 });
 exports.retirarStock = retirarStock;
 //* Cargar stock a un item
+/**
+ * It takes a request, and a response, and it finds an item in the database, and then it adds the
+ * amount of boxes and loose units that the user has specified, and then it saves the item
+ * @param {Request} req - Request
+ * @param {Response} res - Response
+ * @returns a Promise.
+ */
 const addStockToItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const dayJS = (0, dayjs_1.default)();
     const itemChanges = req.body;
@@ -158,6 +198,13 @@ const addStockToItem = (req, res) => __awaiter(void 0, void 0, void 0, function*
 });
 exports.addStockToItem = addStockToItem;
 //* Editar metadatos de un item en el stock
+/**
+ * It takes the item from the request body, finds the item in the database by its id, and updates the
+ * item in the database with the item from the request body
+ * @param {Request} req - Request
+ * @param {Response} res - Response
+ * @returns The itemUpdate is being returned.
+ */
 const editItemStock = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const item = req.body;
     console.log(item);
@@ -174,6 +221,12 @@ const editItemStock = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.editItemStock = editItemStock;
 //* Obtener el historial de un item
+/**
+ * It gets the history of an item from the database and returns it to the user.
+ * @param {Request} req - Request
+ * @param {Response} res - Response
+ * @returns The history of the item.
+ */
 const getHistoryItem = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const item = yield ItemStock_model_1.ItemStockModel.findById(req.params.id);
     if (item) {
